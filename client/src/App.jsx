@@ -237,64 +237,69 @@ export default function App() {
   };
 
   const downloadCards = () => {
-    // Create a printable version
+    // Create TSC printer optimized version
     const printWindow = window.open('', '_blank');
     const cardsHTML = items.map(item => `
-      <div style="
+      <div class="label" style="
         display: block; 
         margin: 0; 
         padding: 0; 
-        border: 1px solid #8B4513; 
-        border-radius: 4px; 
+        border: none; 
         width: 70mm; 
         height: 30mm; 
-        background: linear-gradient(135deg, #F5E6D3 0%, #E8D5B8 100%);
+        background: white;
         page-break-before: always;
         page-break-after: always;
         page-break-inside: avoid;
         position: relative;
         font-family: Arial, sans-serif;
         box-sizing: border-box;
-      " class="card">
-        <div style="padding: 2mm; height: 26mm; position: relative; box-sizing: border-box; display: flex;">
+        overflow: hidden;
+      ">
+        <div style="padding: 1mm; height: 28mm; position: relative; box-sizing: border-box; display: flex; background: white;">
           <!-- Left side content -->
-          <div style="flex: 1; padding-right: 2mm;">
+          <div style="flex: 1; padding-right: 1mm;">
             <!-- Item Name -->
-            <div style="font-size: 9px; font-weight: bold; color: #654321; margin-bottom: 1mm; line-height: 1;">
+            <div style="font-size: 10px; font-weight: bold; color: black; margin-bottom: 1mm; line-height: 1.1; font-family: Arial, sans-serif;">
               ${item.itemName}
             </div>
             
-            <!-- Packed Date and Net Weight on same line -->
-            <div style="font-size: 6px; color: #8B4513; margin-bottom: 0.5mm; line-height: 1;">
-              Packed: ${getDisplayDate()} | Net Weight: ${item.netWeight}
+            <!-- Packed Date and Net Weight -->
+            <div style="font-size: 7px; color: black; margin-bottom: 0.5mm; line-height: 1.1; font-family: Arial, sans-serif;">
+              Packed: ${getDisplayDate()}
+            </div>
+            <div style="font-size: 7px; color: black; margin-bottom: 1mm; line-height: 1.1; font-family: Arial, sans-serif;">
+              Net Weight: ${item.netWeight}
             </div>
             
-            <!-- Company Info - more compact -->
-            <div style="font-size: 5px; color: #8B4513; line-height: 1.1;">
+            <!-- Company Info - compact for thermal printing -->
+            <div style="font-size: 5px; color: black; line-height: 1.2; font-family: Arial, sans-serif;">
               <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
               Patrapada, Bhubaneswar-19<br>
-              Contact: support@villamart.in, 8093123412<br>
-              Website: www.villamart.in | FSSAI Lic No.: 12024033000159
+              support@villamart.in, 8093123412<br>
+              www.villamart.in<br>
+              FSSAI: 12024033000159
             </div>
           </div>
-          
+
           <!-- Right side elements -->
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-width: 20mm;">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 18mm;">
             <!-- Top row: Symbol and Day value -->
             <div style="display: flex; gap: 1mm; margin-bottom: 1mm;">
               <!-- Symbol box -->
               <div style="
-                width: 8mm; 
-                height: 8mm; 
-                border: 1px solid #654321; 
+                width: 7mm; 
+                height: 7mm; 
+                border: 1px solid black; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
-                font-size: 6px; 
+                font-size: 8px; 
                 font-weight: bold; 
-                color: #654321;
-                background: rgba(255,255,255,0.7);
+                color: black;
+                background: white;
                 box-sizing: border-box;
+                font-family: Arial, sans-serif;
               ">
                 ${item.symbol}
               </div>
@@ -303,15 +308,16 @@ export default function App() {
               <div style="
                 width: 6mm; 
                 height: 6mm; 
-                border: 1px solid #654321; 
+                border: 1px solid black; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
-                font-size: 5px; 
+                font-size: 7px; 
                 font-weight: bold; 
-                color: #654321;
-                background: rgba(255,255,255,0.7);
+                color: black;
+                background: white;
                 box-sizing: border-box;
+                font-family: Arial, sans-serif;
               ">
                 ${item.dayValue}
               </div>
@@ -319,10 +325,10 @@ export default function App() {
             
             <!-- QR Code -->
             <div style="display: flex; flex-direction: column; align-items: center;">
-              <div id="qr-${item.id}" style="background: white; padding: 1px; border-radius: 2px;"></div>
+              <div id="qr-${item.id}" style="background: white; padding: 0; margin-bottom: 0.5mm;"></div>
               <!-- QR Code info -->
-              <div style="font-size: 3px; color: #654321; text-align: center; line-height: 1; margin-top: 0.5mm;">
-                ${item.qrText.split('_')[1]} ${getDisplayDate().replace(/-/g, '/')}
+              <div style="font-size: 4px; color: black; text-align: center; line-height: 1; font-family: Arial, sans-serif;">
+                ${item.qrText.split('_')[1]}<br>${getDisplayDate().replace(/-/g, '/')}
               </div>
             </div>
           </div>
@@ -333,45 +339,72 @@ export default function App() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Product Cards - 70x30mm</title>
+          <title>TSC Thermal Labels - 70x30mm</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
           <style>
+            * {
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
             body { 
               font-family: Arial, sans-serif; 
               margin: 0;
-              padding: 5mm;
-              background: #f5f5f5;
+              padding: 0;
+              background: white;
+              color: black;
             }
             @media print {
               body { 
-                margin: 0; 
-                padding: 0; 
-                background: white; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background: white !important; 
               }
               @page {
                 size: 70mm 30mm;
-                margin: 0;
+                margin: 0 !important;
               }
-              .card {
+              .label {
                 page-break-before: always;
                 page-break-after: always;
+                page-break-inside: avoid;
               }
-              .card:first-child {
-                page-break-before: auto;
+              .label:first-child {
+                page-break-before: avoid;
+              }
+              .no-print { 
+                display: none !important; 
+              }
+            }
+            @media screen {
+              .label {
+                border: 1px dashed #ccc;
+                margin: 5mm;
               }
             }
           </style>
         </head>
         <body>
-          <button class="no-print" onclick="window.print()" style="margin: 5px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Print Product Cards</button>
+          <div class="no-print" style="padding: 10px; background: #f0f0f0; border-bottom: 1px solid #ccc;">
+            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels</h3>
+            <p style="margin: 0 0 10px 0; font-size: 14px;">Label Size: 70mm x 30mm | Total Labels: ${items.length}</p>
+            <button onclick="window.print()" style="margin-right: 10px; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Print Labels</button>
+            <div style="margin-top: 10px; font-size: 12px; color: #666;">
+              <strong>TSC Printer Setup:</strong><br>
+              • Set paper size to 70mm x 30mm<br>
+              • Enable "Fit to page" or "Scale: 100%"<br>
+              • Set margins to 0mm<br>
+              • Use high quality/300dpi setting for QR codes
+            </div>
+          </div>
           <div>${cardsHTML}</div>
           <script>
-            // Generate QR codes after page loads
+            // Generate QR codes after page loads - smaller size for thermal printing
             ${items.map(item => `
               var qr${item.id.replace(/[^a-zA-Z0-9]/g, '')} = qrcode(0, 'M');
               qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.addData('${item.qrText}');
               qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.make();
-              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(1);
+              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(2, 0);
             `).join('')}
           </script>
         </body>
