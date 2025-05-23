@@ -11,8 +11,6 @@ export default function App() {
   const [editingCell, setEditingCell] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [tempData, setTempData] = useState([]);
-  const [markedItems, setMarkedItems] = useState(new Set());
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Get today's date in YYYYMMDD format
   const getTodaysDate = () => {
@@ -77,12 +75,8 @@ export default function App() {
       setRawData(jsonData);
       setTempData(jsonData);
       
-      // Mark all items by default
-      const allMarked = new Set(jsonData.map((_, index) => index));
-      setMarkedItems(allMarked);
-      
       // Generate cards from the raw data
-      generateCardsFromData(jsonData, allMarked);
+      generateCardsFromData(jsonData);
       setShowDataTable(true);
     } catch (err) {
       console.error('Error processing file:', err);
@@ -92,7 +86,7 @@ export default function App() {
     setLoading(false);
   };
 
-  const generateCardsFromData = (dataToProcess, markedSet = markedItems) => {
+  const generateCardsFromData = (dataToProcess) => {
     if (!dataToProcess || dataToProcess.length === 0) return;
 
     const processedItems = [];
@@ -100,9 +94,6 @@ export default function App() {
     const currentDay = getCurrentDay();
 
     dataToProcess.forEach((row, rowIndex) => {
-      // Skip if item is not marked
-      if (!markedSet.has(rowIndex)) return;
-
       try {
         // Try different possible column names (case insensitive)
         const itemCode = row['itemCode'] || row['item_code'] || row['Item Code'] || 
@@ -164,10 +155,6 @@ export default function App() {
       if (index === rowIndex) {
         // If updating count, ensure it's a valid number
         if (column === 'count') {
-          // Allow empty value
-          if (value === '') {
-            return { ...row, [column]: '' };
-          }
           const numValue = parseInt(value);
           if (isNaN(numValue) || numValue < 0) {
             return row; // Keep original value if invalid
@@ -244,7 +231,6 @@ export default function App() {
     setShowDataTable(false);
     setEditingCell(null);
     setEditMode(false);
-    setMarkedItems(new Set());
     // Reset file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
@@ -254,193 +240,139 @@ export default function App() {
     // Create a printable version
     const printWindow = window.open('', '_blank');
     const cardsHTML = items.map(item => `
-      <div class="card" style="
-        width: 70mm;
-        height: 30mm;
-        margin: 0;
-        padding: 0;
-        border: 0.3mm solid #000000;
-        border-radius: 2mm;
-        background: #FFFFFF;
+      <div style="
+        display: block; 
+        margin: 0; 
+        padding: 0; 
+        border: 1px solid #8B4513; 
+        border-radius: 4px; 
+        width: 70mm; 
+        height: 30mm; 
+        background: linear-gradient(135deg, #F5E6D3 0%, #E8D5B8 100%);
+        page-break-before: always;
+        page-break-after: always;
+        page-break-inside: avoid;
         position: relative;
         font-family: Arial, sans-serif;
         box-sizing: border-box;
-        overflow: hidden;
-        page-break-after: always;
-        margin-bottom: 2mm;
-      ">
-        <div style="padding: 2mm; height: 26mm; position: relative; box-sizing: border-box;">
-          <!-- Left Content -->
-          <div style="width: 45mm; float: left;">
+      " class="card">
+        <div style="padding: 2mm; height: 26mm; position: relative; box-sizing: border-box; display: flex;">
+          <!-- Left side content -->
+          <div style="flex: 1; padding-right: 2mm;">
             <!-- Item Name -->
-            <div style="font-size: 4mm; font-weight: bold; color: #000000; margin-bottom: 1mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 9px; font-weight: bold; color: #654321; margin-bottom: 1mm; line-height: 1;">
               ${item.itemName}
             </div>
             
-            <!-- Packed Date -->
-            <div style="font-size: 2.5mm; color: #333333; margin-bottom: 0.5mm;">
-              Packed: ${getDisplayDate()}
+            <!-- Packed Date and Net Weight on same line -->
+            <div style="font-size: 6px; color: #8B4513; margin-bottom: 0.5mm; line-height: 1;">
+              Packed: ${getDisplayDate()} | Net Weight: ${item.netWeight}
             </div>
             
-            <!-- Net Weight -->
-            <div style="font-size: 2.5mm; color: #333333; margin-bottom: 0.5mm;">
-              Net Weight: ${item.netWeight}
-            </div>
-            
-            <!-- Company Info -->
-            <div style="font-size: 2.2mm; color: #333333; margin-bottom: 0.3mm;">
-              <strong>Pkd By: Villamart Pvt. Ltd</strong>
-            </div>
-            <div style="font-size: 2mm; color: #333333; margin-bottom: 0.3mm;">
-              Patrapada, Bhubaneswar-19
-            </div>
-            <div style="font-size: 2mm; color: #333333; margin-bottom: 0.3mm;">
-              Contact: support@villamart.in
-            </div>
-            <div style="font-size: 2mm; color: #333333; margin-bottom: 0.3mm;">
-              Website: www.villamart.in
-            </div>
-            <div style="font-size: 2mm; color: #333333;">
-              FSSAI Lic No.: 12024033000159
+            <!-- Company Info - more compact -->
+            <div style="font-size: 5px; color: #8B4513; line-height: 1.1;">
+              <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
+              Patrapada, Bhubaneswar-19<br>
+              Contact: support@villamart.in, 8093123412<br>
+              Website: www.villamart.in | FSSAI Lic No.: 12024033000159
             </div>
           </div>
           
           <!-- Right side elements -->
-          <div style="float: right; width: 20mm; text-align: center;">
-            <!-- Symbol box -->
-            <div style="
-              width: 6mm; 
-              height: 6mm; 
-              border: 0.3mm solid #000000; 
-              display: inline-flex; 
-              align-items: center; 
-              justify-content: center; 
-              font-size: 4mm; 
-              font-weight: bold; 
-              color: #000000;
-              margin-bottom: 1mm;
-              background: #FFFFFF;
-            ">
-              ${item.symbol}
-            </div>
-            
-            <!-- Day value box -->
-            <div style="
-              width: 5mm; 
-              height: 5mm; 
-              border: 0.3mm solid #000000; 
-              display: inline-flex; 
-              align-items: center; 
-              justify-content: center; 
-              font-size: 3mm; 
-              font-weight: bold; 
-              color: #000000;
-              margin-bottom: 1mm;
-              background: #FFFFFF;
-            ">
-              ${item.dayValue}
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-width: 20mm;">
+            <!-- Top row: Symbol and Day value -->
+            <div style="display: flex; gap: 1mm; margin-bottom: 1mm;">
+              <!-- Symbol box -->
+              <div style="
+                width: 8mm; 
+                height: 8mm; 
+                border: 1px solid #654321; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                font-size: 6px; 
+                font-weight: bold; 
+                color: #654321;
+                background: rgba(255,255,255,0.7);
+                box-sizing: border-box;
+              ">
+                ${item.symbol}
+              </div>
+              
+              <!-- Day value box -->
+              <div style="
+                width: 6mm; 
+                height: 6mm; 
+                border: 1px solid #654321; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                font-size: 5px; 
+                font-weight: bold; 
+                color: #654321;
+                background: rgba(255,255,255,0.7);
+                box-sizing: border-box;
+              ">
+                ${item.dayValue}
+              </div>
             </div>
             
             <!-- QR Code -->
-            <canvas id="qr-${item.id}" style="background: white; padding: 0.3mm; border-radius: 0.5mm; width: 15mm; height: 15mm; margin: 0 auto;"></canvas>
-          </div>
-          
-          <!-- QR Code info at bottom -->
-          <div style="position: absolute; bottom: 0.5mm; left: 2mm; font-size: 2mm; color: #333333;">
-            ${item.qrText.split('_')[1]} ${getDisplayDate().replace(/-/g, '/')}
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div id="qr-${item.id}" style="background: white; padding: 1px; border-radius: 2px;"></div>
+              <!-- QR Code info -->
+              <div style="font-size: 3px; color: #654321; text-align: center; line-height: 1; margin-top: 0.5mm;">
+                ${item.qrText.split('_')[1]} ${getDisplayDate().replace(/-/g, '/')}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     `).join('');
-  
+
     printWindow.document.write(`
-      <!DOCTYPE html>
       <html>
         <head>
-          <title>Product Cards</title>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+          <title>Product Cards - 70x30mm</title>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
           <style>
-            @page {
-              size: 70mm 30mm portrait; /* Explicitly set portrait orientation */
-              margin: 0;
-            }
             body { 
+              font-family: Arial, sans-serif; 
               margin: 0;
-              padding: 0;
-              background: white;
-              width: 70mm;
-              height: 30mm;
-            }
-            .card-container {
-              width: 70mm;
-              margin: 0 auto;
-            }
-            .card {
-              width: 70mm;
-              height: 30mm;
-              margin: 0;
-              padding: 0;
-              page-break-after: always;
-              background: white;
+              padding: 5mm;
+              background: #f5f5f5;
             }
             @media print {
               body { 
-                margin: 0;
-                padding: 0;
-                background: white;
-                width: 70mm;
-                height: 30mm;
-              }
-              .no-print { 
-                display: none; 
-              }
-              .card {
-                width: 70mm;
-                height: 30mm;
-                margin: 0;
-                padding: 0;
-                page-break-after: always;
-                background: white;
-                transform: rotate(0deg); /* Ensure no rotation */
+                margin: 0; 
+                padding: 0; 
+                background: white; 
               }
               @page {
-                size: 70mm 30mm portrait; /* Reinforce portrait for print */
+                size: 70mm 30mm;
                 margin: 0;
+              }
+              .card {
+                page-break-before: always;
+                page-break-after: always;
+              }
+              .card:first-child {
+                page-break-before: auto;
               }
             }
           </style>
         </head>
         <body>
-          <button class="no-print" onclick="window.print()" style="
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 1000;
-          ">Print Cards</button>
-          <div class="card-container">
-            ${cardsHTML}
-          </div>
+          <button class="no-print" onclick="window.print()" style="margin: 5px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Print Product Cards</button>
+          <div>${cardsHTML}</div>
           <script>
             // Generate QR codes after page loads
-            window.onload = function() {
-              ${items.map(item => `
-                QRCode.toCanvas(document.getElementById('qr-${item.id}'), '${item.qrText}', {
-                  width: 60,
-                  height: 60,
-                  margin: 0,
-                  color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                  }
-                });
-              `).join('')}
-            };
+            ${items.map(item => `
+              var qr${item.id.replace(/[^a-zA-Z0-9]/g, '')} = qrcode(0, 'M');
+              qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.addData('${item.qrText}');
+              qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.make();
+              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(1);
+            `).join('')}
           </script>
         </body>
       </html>
@@ -448,39 +380,7 @@ export default function App() {
     printWindow.document.close();
   };
 
-  // Add function to toggle mark status
-  const toggleMark = (rowIndex) => {
-    const newMarkedItems = new Set(markedItems);
-    if (newMarkedItems.has(rowIndex)) {
-      newMarkedItems.delete(rowIndex);
-    } else {
-      newMarkedItems.add(rowIndex);
-    }
-    setMarkedItems(newMarkedItems);
-    // Regenerate cards with new marked items
-    generateCardsFromData(tempData, newMarkedItems);
-  };
-
-  // Add function to mark all items
-  const markAll = () => {
-    const allMarked = new Set(tempData.map((_, index) => index));
-    setMarkedItems(allMarked);
-    generateCardsFromData(tempData, allMarked);
-  };
-
-  // Add function to unmark all items
-  const unmarkAll = () => {
-    setMarkedItems(new Set());
-    setItems([]);
-  };
-
   const dataToShow = editMode ? tempData : rawData;
-
-  // Add search filter function
-  const filteredData = dataToShow.filter(row => {
-    const itemName = (row.itemName || row.name || row['Item Name'] || '').toLowerCase();
-    return itemName.includes(searchQuery.toLowerCase());
-  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -544,7 +444,7 @@ export default function App() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
-                Product Data ({filteredData.length} rows)
+                Product Data ({dataToShow.length} rows)
                 {editMode && <span className="text-orange-600 ml-2">[EDIT MODE]</span>}
               </h2>
               <div className="space-x-2">
@@ -593,38 +493,11 @@ export default function App() {
                 )}
               </div>
             </div>
-
-            {/* Search Input */}
-            <div className="mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search by item name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              {searchQuery && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Showing {filteredData.length} of {dataToShow.length} items
-                </p>
-              )}
-            </div>
             
             <div className="overflow-x-auto">
               <table className="min-w-full border border-gray-300">
                 <thead className={editMode ? "bg-orange-50" : "bg-gray-50"}>
                   <tr>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Mark</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item Code</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item Name</th>
@@ -641,16 +514,8 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((row, rowIndex) => (
+                  {dataToShow.map((row, rowIndex) => (
                     <tr key={rowIndex} className={editMode ? "hover:bg-orange-50" : "hover:bg-gray-50"}>
-                      <td className="border border-gray-300 px-3 py-2">
-                        <input
-                          type="checkbox"
-                          checked={markedItems.has(rowIndex)}
-                          onChange={() => toggleMark(rowIndex)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                      </td>
                       <td className="border border-gray-300 px-3 py-2">
                         <button
                           onClick={() => deleteRow(rowIndex)}
@@ -664,7 +529,7 @@ export default function App() {
                           {editMode && editingCell === `${rowIndex}-${column}` ? (
                             <input
                               type="text"
-                              value={dataToShow[rowIndex][column] || ''}
+                              value={row[column] || ''}
                               onChange={(e) => updateCellValue(rowIndex, column, e.target.value)}
                               onBlur={() => setEditingCell(null)}
                               onKeyPress={(e) => {
@@ -680,7 +545,7 @@ export default function App() {
                               onClick={() => editMode && setEditingCell(`${rowIndex}-${column}`)}
                               className={`min-h-6 p-1 rounded text-sm ${editMode ? 'cursor-pointer hover:bg-orange-100' : ''}`}
                             >
-                              {dataToShow[rowIndex][column] || ''}
+                              {row[column] || ''}
                             </div>
                           )}
                         </td>
@@ -691,38 +556,21 @@ export default function App() {
               </table>
             </div>
             
-            <div className="mt-4 flex justify-between items-center">
-              <div className="space-x-2">
-                <button
-                  onClick={markAll}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  Mark All
-                </button>
-                <button
-                  onClick={unmarkAll}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  Unmark All
-                </button>
-              </div>
-              <div className="text-sm text-gray-600">
-                {editMode ? (
-                  <div className="bg-orange-50 p-3 rounded border border-orange-200">
-                    <p className="font-medium text-orange-800 mb-2">Edit Mode Active:</p>
-                    <p>• Click on any cell to edit its value</p>
-                    <p>• Press Enter or click outside to confirm cell changes</p>
-                    <p>• Click "Save Changes" to update the product cards</p>
-                    <p>• Click "Cancel" to discard all changes</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p>• Click "Edit Data" to modify values</p>
-                    <p>• Use checkboxes to select which items to display as cards</p>
-                    <p>• Current day: <span className="font-semibold text-blue-600">{getCurrentDay()}</span> (highlighted column will be used for day values)</p>
-                  </div>
-                )}
-              </div>
+            <div className="mt-4 text-sm text-gray-600">
+              {editMode ? (
+                <div className="bg-orange-50 p-3 rounded border border-orange-200">
+                  <p className="font-medium text-orange-800 mb-2">Edit Mode Active:</p>
+                  <p>• Click on any cell to edit its value</p>
+                  <p>• Press Enter or click outside to confirm cell changes</p>
+                  <p>• Click "Save Changes" to update the product cards</p>
+                  <p>• Click "Cancel" to discard all changes</p>
+                </div>
+              ) : (
+                <div>
+                  <p>• Click "Edit Data" to modify values</p>
+                  <p>• Current day: <span className="font-semibold text-blue-600">{getCurrentDay()}</span> (highlighted column will be used for day values)</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -767,17 +615,20 @@ export default function App() {
               {items.map((item) => (
                 <div 
                   key={item.id} 
-                  className="relative border-2 border-gray-800 rounded-2xl p-4 h-48 bg-white hover:shadow-lg transition-shadow"
+                  className="relative border-2 border-yellow-800 rounded-2xl p-4 h-48 bg-gradient-to-br from-yellow-100 to-yellow-200 hover:shadow-lg transition-shadow"
+                  style={{
+                    background: 'linear-gradient(135deg, #F5E6D3 0%, #E8D5B8 100%)'
+                  }}
                 >
                   {/* Main Content */}
                   <div className="h-full relative">
                     {/* Item Name */}
-                    <div className="text-lg font-bold text-gray-900 mb-2">
+                    <div className="text-lg font-bold text-yellow-900 mb-2">
                       {item.itemName}
                     </div>
                     
                     {/* Product Info */}
-                    <div className="text-sm text-gray-800 space-y-1">
+                    <div className="text-sm text-yellow-800 space-y-1">
                       <div>Packed: {getDisplayDate()}</div>
                       <div>Net Weight: {item.netWeight}</div>
                       <div className="font-semibold">Pkd By: Villamart Pvt. Ltd</div>
@@ -790,12 +641,12 @@ export default function App() {
                     {/* Right Side Elements */}
                     <div className="absolute top-0 right-0 flex flex-col items-center space-y-2">
                       {/* Symbol Box */}
-                      <div className="w-8 h-8 border-2 border-gray-900 bg-white flex items-center justify-center font-bold text-gray-900">
+                      <div className="w-8 h-8 border-2 border-yellow-900 bg-white bg-opacity-70 flex items-center justify-center font-bold text-yellow-900">
                         {item.symbol}
                       </div>
                       
                       {/* Day Value Box */}
-                      <div className="w-6 h-6 border-2 border-gray-900 bg-white flex items-center justify-center text-sm font-bold text-gray-900">
+                      <div className="w-6 h-6 border-2 border-yellow-900 bg-white bg-opacity-70 flex items-center justify-center text-sm font-bold text-yellow-900">
                         {item.dayValue}
                       </div>
                       
@@ -811,7 +662,7 @@ export default function App() {
                     </div>
                     
                     {/* QR Info at bottom right */}
-                    <div className="absolute bottom-0 right-0 text-xs text-gray-800">
+                    <div className="absolute bottom-0 right-0 text-xs text-yellow-800">
                       {item.itemCode} {getDisplayDate().replace(/-/g, '/')}
                     </div>
                   </div>
@@ -825,8 +676,9 @@ export default function App() {
               <div className="text-sm text-blue-700 space-y-1">
                 <p>• QR codes contain format: <code>a_&lt;itemCode&gt;_&lt;todaysDate&gt;</code></p>
                 <p>• Packed date: {getDisplayDate()}</p>
-                <p>• Day-based values fetched from: {getCurrentDay()} column</p>
-                <p>• Company details remain constant for all cards</p>
+                <p>• Current day: <span className="font-semibold text-blue-600">{getCurrentDay()}</span></p>
+                <p>• Click "Print/Download Cards" to generate a printable version</p>
+                <p>• Click "Clear All" to reset the application</p>
               </div>
             </div>
           </div>
@@ -835,3 +687,4 @@ export default function App() {
     </div>
   );
 }
+      
