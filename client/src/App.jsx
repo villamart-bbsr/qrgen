@@ -254,7 +254,7 @@ export default function App() {
     // Create a printable version
     const printWindow = window.open('', '_blank');
     const cardsHTML = items.map(item => `
-      <div style="
+      <div class="card" style="
         width: 70mm;
         height: 30mm;
         margin: 0;
@@ -354,6 +354,7 @@ export default function App() {
     `).join('');
 
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Product Cards</title>
@@ -367,8 +368,18 @@ export default function App() {
               margin: 0;
               padding: 0;
               background: white;
+            }
+            .card-container {
+              width: 70mm;
+              margin: 0 auto;
+            }
+            .card {
               width: 70mm;
               height: 30mm;
+              margin: 0;
+              padding: 0;
+              page-break-after: always;
+              background: white;
             }
             @media print {
               body { 
@@ -379,15 +390,13 @@ export default function App() {
               .no-print { 
                 display: none; 
               }
-              div[style*='width: 70mm'] { 
-                page-break-after: always;
+              .card {
+                width: 70mm;
+                height: 30mm;
                 margin: 0;
                 padding: 0;
-                border: 0.3mm solid #000000;
-              }
-              @page {
-                size: 70mm 30mm;
-                margin: 0;
+                page-break-after: always;
+                background: white;
               }
             }
           </style>
@@ -405,25 +414,24 @@ export default function App() {
             cursor: pointer;
             z-index: 1000;
           ">Print Cards</button>
-          <div 
-          ">
+          <div class="card-container">
             ${cardsHTML}
           </div>
           <script>
             // Generate QR codes after page loads
             window.onload = function() {
-  ${items.map(item => `
-    QRCode.toCanvas(document.getElementById('qr-${item.id}'), '${item.qrText}', {
-      width: 60,
-      height: 60,
-      margin: 0,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    });
-  `).join('')}
-};
+              ${items.map(item => `
+                QRCode.toCanvas(document.getElementById('qr-${item.id}'), '${item.qrText}', {
+                  width: 60,
+                  height: 60,
+                  margin: 0,
+                  color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                  }
+                });
+              `).join('')}
+            };
           </script>
         </body>
       </html>
