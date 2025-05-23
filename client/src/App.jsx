@@ -267,6 +267,7 @@ export default function App() {
         box-sizing: border-box;
         overflow: hidden;
         page-break-after: always;
+        margin-bottom: 2mm;
       ">
         <div style="padding: 2mm; height: 26mm; position: relative; box-sizing: border-box;">
           <!-- Left Content -->
@@ -341,7 +342,7 @@ export default function App() {
             </div>
             
             <!-- QR Code -->
-            <div id="qr-${item.id}" style="background: white; padding: 0.3mm; border-radius: 0.5mm; width: 15mm; height: 15mm; margin: 0 auto;"></div>
+            <canvas id="qr-${item.id}" style="background: white; padding: 0.3mm; border-radius: 0.5mm; width: 15mm; height: 15mm; margin: 0 auto;"></canvas>
           </div>
           
           <!-- QR Code info at bottom -->
@@ -356,7 +357,7 @@ export default function App() {
       <html>
         <head>
           <title>Product Cards</title>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
           <style>
             @page {
               size: 70mm 30mm;
@@ -382,6 +383,11 @@ export default function App() {
                 page-break-after: always;
                 margin: 0;
                 padding: 0;
+                border: 0.3mm solid #000000;
+              }
+              @page {
+                size: 70mm 30mm;
+                margin: 0;
               }
             }
           </style>
@@ -399,23 +405,25 @@ export default function App() {
             cursor: pointer;
             z-index: 1000;
           ">Print Cards</button>
-          <div style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 70mm;
-            height: 30mm;
+          <div 
           ">
             ${cardsHTML}
           </div>
           <script>
             // Generate QR codes after page loads
-            ${items.map(item => `
-              var qr${item.id.replace(/[^a-zA-Z0-9]/g, '')} = qrcode(0, 'M');
-              qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.addData('${item.qrText}');
-              qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.make();
-              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(2);
-            `).join('')}
+            window.onload = function() {
+  ${items.map(item => `
+    QRCode.toCanvas(document.getElementById('qr-${item.id}'), '${item.qrText}', {
+      width: 60,
+      height: 60,
+      margin: 0,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+  `).join('')}
+};
           </script>
         </body>
       </html>
