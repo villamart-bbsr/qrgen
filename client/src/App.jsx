@@ -352,7 +352,7 @@ export default function App() {
         </div>
       </div>
     `).join('');
-
+  
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -361,13 +361,15 @@ export default function App() {
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
           <style>
             @page {
-              size: 70mm 30mm;
+              size: 70mm 30mm portrait; /* Explicitly set portrait orientation */
               margin: 0;
             }
             body { 
               margin: 0;
               padding: 0;
               background: white;
+              width: 70mm;
+              height: 30mm;
             }
             .card-container {
               width: 70mm;
@@ -386,6 +388,8 @@ export default function App() {
                 margin: 0;
                 padding: 0;
                 background: white;
+                width: 70mm;
+                height: 30mm;
               }
               .no-print { 
                 display: none; 
@@ -397,6 +401,11 @@ export default function App() {
                 padding: 0;
                 page-break-after: always;
                 background: white;
+                transform: rotate(0deg); /* Ensure no rotation */
+              }
+              @page {
+                size: 70mm 30mm portrait; /* Reinforce portrait for print */
+                margin: 0;
               }
             }
           </style>
