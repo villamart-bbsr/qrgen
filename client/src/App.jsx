@@ -12,6 +12,7 @@ export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [tempData, setTempData] = useState([]);
   const [markedItems, setMarkedItems] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Get today's date in YYYYMMDD format
   const getTodaysDate = () => {
@@ -254,19 +255,18 @@ export default function App() {
     const printWindow = window.open('', '_blank');
     const cardsHTML = items.map(item => `
       <div style="
-        display: inline-block; 
-        margin: 2mm; 
-        padding: 0; 
-        border: 0.3mm solid #000000; 
-        border-radius: 2mm; 
-        width: 70mm; 
-        height: 30mm; 
+        width: 70mm;
+        height: 30mm;
+        margin: 0;
+        padding: 0;
+        border: 0.3mm solid #000000;
+        border-radius: 2mm;
         background: #FFFFFF;
-        page-break-inside: avoid;
         position: relative;
         font-family: Arial, sans-serif;
         box-sizing: border-box;
         overflow: hidden;
+        page-break-after: always;
       ">
         <div style="padding: 2mm; height: 26mm; position: relative; box-sizing: border-box;">
           <!-- Left Content -->
@@ -358,21 +358,56 @@ export default function App() {
           <title>Product Cards</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
           <style>
-            body { 
-              font-family: Arial, sans-serif; 
+            @page {
+              size: 70mm 30mm;
               margin: 0;
-              background: #f5f5f5;
+            }
+            body { 
+              margin: 0;
+              padding: 0;
+              background: white;
+              width: 70mm;
+              height: 30mm;
             }
             @media print {
-              body { margin: 0; background: white; }
-              .no-print { display: none; }
-              div[style*='width: 70mm'] { page-break-inside: avoid; }
+              body { 
+                margin: 0;
+                padding: 0;
+                background: white;
+              }
+              .no-print { 
+                display: none; 
+              }
+              div[style*='width: 70mm'] { 
+                page-break-after: always;
+                margin: 0;
+                padding: 0;
+              }
             }
           </style>
         </head>
         <body>
-          <button class="no-print" onclick="window.print()" style="margin: 4mm; padding: 3mm 6mm; background: #007bff; color: white; border: none; border-radius: 2mm; cursor: pointer; font-size: 4mm;">Print Product Cards</button>
-          <div>${cardsHTML}</div>
+          <button class="no-print" onclick="window.print()" style="
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+          ">Print Cards</button>
+          <div style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70mm;
+            height: 30mm;
+          ">
+            ${cardsHTML}
+          </div>
           <script>
             // Generate QR codes after page loads
             ${items.map(item => `
@@ -415,6 +450,12 @@ export default function App() {
   };
 
   const dataToShow = editMode ? tempData : rawData;
+
+  // Add search filter function
+  const filteredData = dataToShow.filter(row => {
+    const itemName = (row.itemName || row.name || row['Item Name'] || '').toLowerCase();
+    return itemName.includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -478,7 +519,7 @@ export default function App() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
-                Product Data ({dataToShow.length} rows)
+                Product Data ({filteredData.length} rows)
                 {editMode && <span className="text-orange-600 ml-2">[EDIT MODE]</span>}
               </h2>
               <div className="space-x-2">
@@ -527,6 +568,32 @@ export default function App() {
                 )}
               </div>
             </div>
+
+            {/* Search Input */}
+            <div className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search by item name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              {searchQuery && (
+                <p className="mt-2 text-sm text-gray-600">
+                  Showing {filteredData.length} of {dataToShow.length} items
+                </p>
+              )}
+            </div>
             
             <div className="overflow-x-auto">
               <table className="min-w-full border border-gray-300">
@@ -549,7 +616,7 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dataToShow.map((row, rowIndex) => (
+                  {filteredData.map((row, rowIndex) => (
                     <tr key={rowIndex} className={editMode ? "hover:bg-orange-50" : "hover:bg-gray-50"}>
                       <td className="border border-gray-300 px-3 py-2">
                         <input
