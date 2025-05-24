@@ -237,7 +237,7 @@ export default function App() {
   };
 
   const downloadCards = () => {
-    // Create TSC printer optimized version
+    // Create TSC printer optimized version with fixed layout
     const printWindow = window.open('', '_blank');
     const cardsHTML = items.map(item => `
       <div class="label" style="
@@ -256,82 +256,101 @@ export default function App() {
         box-sizing: border-box;
         overflow: hidden;
       ">
-        <div style="padding: 1mm; height: 28mm; position: relative; box-sizing: border-box; display: flex; background: white;">
-          <!-- Left side content -->
-          <div style="flex: 1; padding-right: 1mm;">
-            <!-- Item Name -->
-            <div style="font-size: 10px; font-weight: bold; color: black; margin-bottom: 1mm; line-height: 1.1; font-family: Arial, sans-serif;">
-              ${item.itemName}
-            </div>
-            
-            <!-- Packed Date and Net Weight -->
-            <div style="font-size: 7px; color: black; margin-bottom: 0.5mm; line-height: 1.1; font-family: Arial, sans-serif;">
-              Packed: ${getDisplayDate()}
-            </div>
-            <div style="font-size: 7px; color: black; margin-bottom: 1mm; line-height: 1.1; font-family: Arial, sans-serif;">
-              Net Weight: ${item.netWeight}
-            </div>
-            
-            <!-- Company Info - compact for thermal printing -->
-            <div style="font-size: 5px; color: black; line-height: 1.2; font-family: Arial, sans-serif;">
-              <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
-              Patrapada, Bhubaneswar-19<br>
-              support@villamart.in, 8093123412<br>
-              www.villamart.in<br>
-              FSSAI: 12024033000159
-            </div>
+        <div style="padding: 1.5mm; height: 27mm; position: relative; box-sizing: border-box;">
+          
+          <!-- Product Name - Top Center -->
+          <div style="
+            text-align: center; 
+            font-size: 12px; 
+            font-weight: bold; 
+            color: black; 
+            margin-bottom: 1.5mm; 
+            line-height: 1.1;
+            width: 100%;
+          ">
+            ${item.itemName}
           </div>
-
-          <!-- Right side elements -->
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 18mm;">
-            <!-- Top row: Symbol and Day value -->
-            <div style="display: flex; gap: 1mm; margin-bottom: 1mm;">
-              <!-- Symbol box -->
-              <div style="
-                width: 7mm; 
-                height: 7mm; 
-                border: 1px solid black; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                font-size: 8px; 
-                font-weight: bold; 
-                color: black;
-                background: white;
-                box-sizing: border-box;
-                font-family: Arial, sans-serif;
-              ">
-                ${item.symbol}
+          
+          <!-- Main Content Area -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; height: 18mm;">
+            
+            <!-- Left Side - Company Info -->
+            <div style="flex: 1; padding-right: 2mm;">
+              <div style="font-size: 7px; color: black; line-height: 1.3; margin-bottom: 1mm;">
+                <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
+                Patrapada, Bhubaneswar-19<br>
+                Contact: support@villamart.in<br>
+                Ph: 8093123412<br>
+                www.villamart.in
               </div>
               
-              <!-- Day value box -->
-              <div style="
-                width: 6mm; 
-                height: 6mm; 
-                border: 1px solid black; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                font-size: 7px; 
-                font-weight: bold; 
-                color: black;
-                background: white;
-                box-sizing: border-box;
-                font-family: Arial, sans-serif;
-              ">
-                ${item.dayValue}
+              <div style="font-size: 6px; color: black; line-height: 1.2;">
+                Packed: ${getDisplayDate()}<br>
+                Net Weight: ${item.netWeight}<br>
+                FSSAI: 12024033000159
               </div>
             </div>
             
-            <!-- QR Code -->
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <div id="qr-${item.id}" style="background: white; padding: 0; margin-bottom: 0.5mm;"></div>
-              <!-- QR Code info -->
-              <div style="font-size: 4px; color: black; text-align: center; line-height: 1; font-family: Arial, sans-serif;">
-                ${item.qrText.split('_')[1]}<br>${getDisplayDate().replace(/-/g, '/')}
+            <!-- Right Side - QR Code and Boxes -->
+            <div style="display: flex; flex-direction: column; align-items: center; min-width: 22mm;">
+              
+              <!-- QR Code -->
+              <div style="margin-bottom: 2mm;">
+                <div id="qr-${item.id}" style="background: white;"></div>
+              </div>
+              
+              <!-- Symbol and Day boxes in a row -->
+              <div style="display: flex; gap: 1mm; margin-bottom: 1mm;">
+                <div style="
+                  width: 8mm; 
+                  height: 8mm; 
+                  border: 2px solid black; 
+                  display: flex; 
+                  align-items: center; 
+                  justify-content: center; 
+                  font-size: 10px; 
+                  font-weight: bold; 
+                  color: black;
+                  background: white;
+                ">
+                  ${item.symbol}
+                </div>
+                
+                <div style="
+                  width: 8mm; 
+                  height: 8mm; 
+                  border: 2px solid black; 
+                  display: flex; 
+                  align-items: center; 
+                  justify-content: center; 
+                  font-size: 10px; 
+                  font-weight: bold; 
+                  color: black;
+                  background: white;
+                ">
+                  ${item.dayValue}
+                </div>
+              </div>
+              
+              <!-- QR Code Info -->
+              <div style="font-size: 5px; color: black; text-align: center; line-height: 1;">
+                ${item.qrText.split('_')[1]} ${getDisplayDate().replace(/-/g, '/')}
               </div>
             </div>
           </div>
+          
+          <!-- Green Dot - Bottom Left -->
+          <!-- <div style="
+            position: absolute; 
+            bottom: 2mm; 
+            left: 2mm; 
+            width: 4mm; 
+            height: 4mm; 
+            background: #00AA00; 
+            border-radius: 50%;
+            border: 1px solid black;
+          "></div> -->
+          
         </div>
       </div>
     `).join('');
@@ -339,7 +358,7 @@ export default function App() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>TSC Thermal Labels - 70x30mm</title>
+          <title>TSC Thermal Labels - 70x30mm Fixed</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
           <style>
             * {
@@ -359,15 +378,23 @@ export default function App() {
                 margin: 0 !important; 
                 padding: 0 !important; 
                 background: white !important; 
+                width: 70mm !important;
+                height: 30mm !important;
               }
               @page {
                 size: 70mm 30mm;
                 margin: 0 !important;
+                padding: 0 !important;
               }
               .label {
                 page-break-before: always;
                 page-break-after: always;
                 page-break-inside: avoid;
+                width: 70mm !important;
+                height: 30mm !important;
+                position: absolute;
+                top: 0;
+                left: 0;
               }
               .label:first-child {
                 page-break-before: avoid;
@@ -386,25 +413,26 @@ export default function App() {
         </head>
         <body>
           <div class="no-print" style="padding: 10px; background: #f0f0f0; border-bottom: 1px solid #ccc;">
-            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels</h3>
+            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels - Fixed Layout</h3>
             <p style="margin: 0 0 10px 0; font-size: 14px;">Label Size: 70mm x 30mm | Total Labels: ${items.length}</p>
             <button onclick="window.print()" style="margin-right: 10px; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Print Labels</button>
             <div style="margin-top: 10px; font-size: 12px; color: #666;">
-              <strong>TSC Printer Setup:</strong><br>
-              • Set paper size to 70mm x 30mm<br>
-              • Enable "Fit to page" or "Scale: 100%"<br>
-              • Set margins to 0mm<br>
-              • Use high quality/300dpi setting for QR codes
+              <strong>TSC Printer Setup for Single Label:</strong><br>
+              • In TSC printer settings: Set Paper Size to 70mm x 30mm<br>
+              • Set Print Mode to "Tear-off" (not continuous)<br>
+              • Enable "Single Label" or "Individual Label" mode<br>
+              • In Windows printer properties: Set page size to Custom 70x30mm<br>
+              • Browser: Set margins to 0, Scale to 100%, fit to page OFF
             </div>
           </div>
           <div>${cardsHTML}</div>
           <script>
-            // Generate QR codes after page loads - smaller size for thermal printing
+            // Generate QR codes - optimized size for thermal printing
             ${items.map(item => `
               var qr${item.id.replace(/[^a-zA-Z0-9]/g, '')} = qrcode(0, 'M');
               qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.addData('${item.qrText}');
               qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.make();
-              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(2, 0);
+              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(3, 0);
             `).join('')}
           </script>
         </body>
