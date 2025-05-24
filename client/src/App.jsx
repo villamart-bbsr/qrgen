@@ -237,7 +237,7 @@ export default function App() {
   };
 
   const downloadCards = () => {
-    // Create TSC printer optimized version with fixed layout
+    // Create TSC printer optimized version for 70x30mm labels
     const printWindow = window.open('', '_blank');
     const cardsHTML = items.map(item => `
       <div class="label" style="
@@ -261,12 +261,15 @@ export default function App() {
           <!-- Product Name - Top Center -->
           <div style="
             text-align: center; 
-            font-size: 12px; 
+            font-size: 11px; 
             font-weight: bold; 
             color: black; 
             margin-bottom: 1.5mm; 
             line-height: 1.1;
             width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           ">
             ${item.itemName}
           </div>
@@ -276,7 +279,7 @@ export default function App() {
             
             <!-- Left Side - Company Info -->
             <div style="flex: 1; padding-right: 2mm;">
-              <div style="font-size: 7px; color: black; line-height: 1.3; margin-bottom: 1mm;">
+              <div style="font-size: 7px; color: black; line-height: 1.2; margin-bottom: 1mm;">
                 <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
                 Patrapada, Bhubaneswar-19<br>
                 Contact: support@villamart.in<br>
@@ -295,7 +298,7 @@ export default function App() {
             <div style="display: flex; flex-direction: column; align-items: center; min-width: 22mm;">
               
               <!-- QR Code -->
-              <div style="margin-bottom: 2mm;">
+              <div style="margin-bottom: 1.5mm;">
                 <div id="qr-${item.id}" style="background: white;"></div>
               </div>
               
@@ -339,26 +342,37 @@ export default function App() {
             </div>
           </div>
           
-          <!-- Green Dot - Bottom Left -->
-          <!-- <div style="
+          <!-- Green Dots - Bottom corners -->
+          <div style="
             position: absolute; 
-            bottom: 2mm; 
+            bottom: 1.5mm; 
             left: 2mm; 
-            width: 4mm; 
-            height: 4mm; 
+            width: 3mm; 
+            height: 3mm; 
             background: #00AA00; 
             border-radius: 50%;
             border: 1px solid black;
-          "></div> -->
+          "></div>
+          
+          <div style="
+            position: absolute; 
+            bottom: 1.5mm; 
+            right: 2mm; 
+            width: 3mm; 
+            height: 3mm; 
+            background: #00AA00; 
+            border-radius: 50%;
+            border: 1px solid black;
+          "></div>
           
         </div>
       </div>
     `).join('');
-
+  
     printWindow.document.write(`
       <html>
         <head>
-          <title>TSC Thermal Labels - 70x30mm Fixed</title>
+          <title>TSC Thermal Labels - 70x30mm</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
           <style>
             * {
@@ -378,11 +392,9 @@ export default function App() {
                 margin: 0 !important; 
                 padding: 0 !important; 
                 background: white !important; 
-                width: 70mm !important;
-                height: 30mm !important;
               }
               @page {
-                size: 70mm 30mm;
+                size: 70mm 30mm landscape;
                 margin: 0 !important;
                 padding: 0 !important;
               }
@@ -392,7 +404,7 @@ export default function App() {
                 page-break-inside: avoid;
                 width: 70mm !important;
                 height: 30mm !important;
-                position: absolute;
+                position: relative;
                 top: 0;
                 left: 0;
               }
@@ -413,16 +425,24 @@ export default function App() {
         </head>
         <body>
           <div class="no-print" style="padding: 10px; background: #f0f0f0; border-bottom: 1px solid #ccc;">
-            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels - Fixed Layout</h3>
+            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels - 70x30mm</h3>
             <p style="margin: 0 0 10px 0; font-size: 14px;">Label Size: 70mm x 30mm | Total Labels: ${items.length}</p>
             <button onclick="window.print()" style="margin-right: 10px; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Print Labels</button>
             <div style="margin-top: 10px; font-size: 12px; color: #666;">
-              <strong>TSC Printer Setup for Single Label:</strong><br>
-              • In TSC printer settings: Set Paper Size to 70mm x 30mm<br>
-              • Set Print Mode to "Tear-off" (not continuous)<br>
-              • Enable "Single Label" or "Individual Label" mode<br>
-              • In Windows printer properties: Set page size to Custom 70x30mm<br>
-              • Browser: Set margins to 0, Scale to 100%, fit to page OFF
+              <strong>TSC Printer Setup Instructions:</strong><br>
+              • Paper Size: 70mm x 30mm (Width x Height)<br>
+              • Orientation: Landscape<br>
+              • Print Direction: Check if it needs to be "Bottom to Top" instead of "Top to Bottom"<br>
+              • Print Speed: Medium (3-4 ips)<br>
+              • Print Density: 8-12<br>
+              • Gap Sensor: Enable and position correctly<br>
+              • Driver Settings: Custom size 70x30mm, Landscape orientation<br>
+              • Browser: Margins = 0, Scale = 100%, Background graphics = ON<br>
+              <br>
+              <strong>If still printing rotated/inverted:</strong><br>
+              • Try changing "Print Direction" from "Top to Bottom" to "Bottom to Top" in TSC settings<br>
+              • Or try "Left to Right" / "Right to Left" options<br>
+              • Check "Mirror" or "Invert" options in printer driver
             </div>
           </div>
           <div>${cardsHTML}</div>
@@ -432,7 +452,7 @@ export default function App() {
               var qr${item.id.replace(/[^a-zA-Z0-9]/g, '')} = qrcode(0, 'M');
               qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.addData('${item.qrText}');
               qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.make();
-              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(3, 0);
+              document.getElementById('qr-${item.id}').innerHTML = qr${item.id.replace(/[^a-zA-Z0-9]/g, '')}.createImgTag(2, 0);
             `).join('')}
           </script>
         </body>
