@@ -237,142 +237,162 @@ export default function App() {
   };
 
   const downloadCards = () => {
-    // Create TSC printer optimized version for 70x30mm labels
+    // Create TSC printer optimized version for 70x30mm labels - 3 per page
     const printWindow = window.open('', '_blank');
-    const cardsHTML = items.map(item => `
-      <div class="label" style="
-        display: block; 
-        margin: 0; 
-        padding: 0; 
-        border: none; 
-        width: 70mm; 
-        height: 30mm; 
+    
+    // Group items into pages of 3
+    const itemsPerPage = 3;
+    const pages = [];
+    for (let i = 0; i < items.length; i += itemsPerPage) {
+      pages.push(items.slice(i, i + itemsPerPage));
+    }
+    
+    const pagesHTML = pages.map((pageItems, pageIndex) => `
+      <div class="page" style="
+        width: 210mm;
+        min-height: 100mm;
         background: white;
-        page-break-before: always;
         page-break-after: always;
         page-break-inside: avoid;
-        position: relative;
-        font-family: Arial, sans-serif;
+        padding: 5mm;
         box-sizing: border-box;
-        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 5mm;
       ">
-        <div style="padding: 1.5mm; height: 27mm; position: relative; box-sizing: border-box;">
-          
-          <!-- Product Name - Top Center -->
-          <div style="
-            text-align: center; 
-            font-size: 11px; 
-            font-weight: bold; 
-            color: black; 
-            margin-bottom: 1.5mm; 
-            line-height: 1.1;
-            width: 100%;
-            white-space: nowrap;
+        ${pageItems.map(item => `
+          <div class="label" style="
+            display: block; 
+            margin: 0; 
+            padding: 0; 
+            border: 1px solid #ccc; 
+            width: 70mm; 
+            height: 30mm; 
+            background: white;
+            position: relative;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
             overflow: hidden;
-            text-overflow: ellipsis;
           ">
-            ${item.itemName}
-          </div>
-          
-          <!-- Main Content Area -->
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; height: 18mm;">
-            
-            <!-- Left Side - Company Info -->
-            <div style="flex: 1; padding-right: 2mm;">
-              <div style="font-size: 7px; color: black; line-height: 1.2; margin-bottom: 1mm;">
-                <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
-                Patrapada, Bhubaneswar-19<br>
-                Contact: support@villamart.in<br>
-                Ph: 8093123412<br>
-                www.villamart.in
+            <div style="padding: 1.5mm; height: 27mm; position: relative; box-sizing: border-box;">
+              
+              <!-- Product Name - Top Center -->
+              <div style="
+                text-align: center; 
+                font-size: 11px; 
+                font-weight: bold; 
+                color: black; 
+                margin-bottom: 1.5mm; 
+                line-height: 1.1;
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              ">
+                ${item.itemName}
               </div>
               
-              <div style="font-size: 6px; color: black; line-height: 1.2;">
-                Packed: ${getDisplayDate()}<br>
-                Net Weight: ${item.netWeight}<br>
-                FSSAI: 12024033000159
-              </div>
-            </div>
-            
-            <!-- Right Side - QR Code and Boxes -->
-            <div style="display: flex; flex-direction: column; align-items: center; min-width: 22mm;">
-              
-              <!-- QR Code -->
-              <div style="margin-bottom: 1.5mm;">
-                <div id="qr-${item.id}" style="background: white;"></div>
-              </div>
-              
-              <!-- Symbol and Day boxes in a row -->
-              <div style="display: flex; gap: 1mm; margin-bottom: 1mm;">
-                <div style="
-                  width: 8mm; 
-                  height: 8mm; 
-                  border: 2px solid black; 
-                  display: flex; 
-                  align-items: center; 
-                  justify-content: center; 
-                  font-size: 10px; 
-                  font-weight: bold; 
-                  color: black;
-                  background: white;
-                ">
-                  ${item.symbol}
+              <!-- Main Content Area -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; height: 18mm;">
+                
+                <!-- Left Side - Company Info -->
+                <div style="flex: 1; padding-right: 2mm;">
+                  <div style="font-size: 7px; color: black; line-height: 1.2; margin-bottom: 1mm;">
+                    <strong>Pkd By: Villamart Pvt. Ltd</strong><br>
+                    Patrapada, Bhubaneswar-19<br>
+                    Contact: support@villamart.in<br>
+                    Ph: 8093123412<br>
+                    www.villamart.in
+                  </div>
+                  
+                  <div style="font-size: 6px; color: black; line-height: 1.2;">
+                    Packed: ${getDisplayDate()}<br>
+                    Net Weight: ${item.netWeight}<br>
+                    FSSAI: 12024033000159
+                  </div>
                 </div>
                 
-                <div style="
-                  width: 8mm; 
-                  height: 8mm; 
-                  border: 2px solid black; 
-                  display: flex; 
-                  align-items: center; 
-                  justify-content: center; 
-                  font-size: 10px; 
-                  font-weight: bold; 
-                  color: black;
-                  background: white;
-                ">
-                  ${item.dayValue}
+                <!-- Right Side - QR Code and Boxes -->
+                <div style="display: flex; flex-direction: column; align-items: center; min-width: 22mm;">
+                  
+                  <!-- QR Code -->
+                  <div style="margin-bottom: 1.5mm;">
+                    <div id="qr-${item.id}" style="background: white;"></div>
+                  </div>
+                  
+                  <!-- Symbol and Day boxes in a row -->
+                  <div style="display: flex; gap: 1mm; margin-bottom: 1mm;">
+                    <div style="
+                      width: 8mm; 
+                      height: 8mm; 
+                      border: 2px solid black; 
+                      display: flex; 
+                      align-items: center; 
+                      justify-content: center; 
+                      font-size: 10px; 
+                      font-weight: bold; 
+                      color: black;
+                      background: white;
+                    ">
+                      ${item.symbol}
+                    </div>
+                    
+                    <div style="
+                      width: 8mm; 
+                      height: 8mm; 
+                      border: 2px solid black; 
+                      display: flex; 
+                      align-items: center; 
+                      justify-content: center; 
+                      font-size: 10px; 
+                      font-weight: bold; 
+                      color: black;
+                      background: white;
+                    ">
+                      ${item.dayValue}
+                    </div>
+                  </div>
+                  
+                  <!-- QR Code Info -->
+                  <div style="font-size: 5px; color: black; text-align: center; line-height: 1;">
+                    ${item.qrText.split('_')[1]} ${getDisplayDate().replace(/-/g, '/')}
+                  </div>
                 </div>
               </div>
               
-              <!-- QR Code Info -->
-              <div style="font-size: 5px; color: black; text-align: center; line-height: 1;">
-                ${item.qrText.split('_')[1]} ${getDisplayDate().replace(/-/g, '/')}
-              </div>
+              <!-- Green Dots - Bottom corners -->
+              <div style="
+                position: absolute; 
+                bottom: 1.5mm; 
+                left: 2mm; 
+                width: 3mm; 
+                height: 3mm; 
+                background: #00AA00; 
+                border-radius: 50%;
+                border: 1px solid black;
+              "></div>
+              
+              <div style="
+                position: absolute; 
+                bottom: 1.5mm; 
+                right: 2mm; 
+                width: 3mm; 
+                height: 3mm; 
+                background: #00AA00; 
+                border-radius: 50%;
+                border: 1px solid black;
+              "></div>
+              
             </div>
           </div>
-          
-          <!-- Green Dots - Bottom corners -->
-          <div style="
-            position: absolute; 
-            bottom: 1.5mm; 
-            left: 2mm; 
-            width: 3mm; 
-            height: 3mm; 
-            background: #00AA00; 
-            border-radius: 50%;
-            border: 1px solid black;
-          "></div>
-          
-          <div style="
-            position: absolute; 
-            bottom: 1.5mm; 
-            right: 2mm; 
-            width: 3mm; 
-            height: 3mm; 
-            background: #00AA00; 
-            border-radius: 50%;
-            border: 1px solid black;
-          "></div>
-          
-        </div>
+        `).join('')}
       </div>
     `).join('');
   
     printWindow.document.write(`
       <html>
         <head>
-          <title>TSC Thermal Labels - 70x30mm</title>
+          <title>TSC Thermal Labels - 70x30mm (3 per page)</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
           <style>
             * {
@@ -394,58 +414,60 @@ export default function App() {
                 background: white !important; 
               }
               @page {
-                size: 70mm 30mm landscape;
-                margin: 0 !important;
-                padding: 0 !important;
+                size: A4 portrait;
+                margin: 5mm !important;
               }
-              .label {
-                page-break-before: always;
+              .page {
                 page-break-after: always;
                 page-break-inside: avoid;
+              }
+              .page:last-child {
+                page-break-after: avoid;
+              }
+              .label {
                 width: 70mm !important;
                 height: 30mm !important;
-                position: relative;
-                top: 0;
-                left: 0;
-              }
-              .label:first-child {
-                page-break-before: avoid;
+                border: 1px solid #000 !important;
               }
               .no-print { 
                 display: none !important; 
               }
             }
             @media screen {
+              .page {
+                border: 1px dashed #999;
+                margin: 10mm;
+                background: #fafafa;
+              }
               .label {
-                border: 1px dashed #ccc;
-                margin: 5mm;
+                border: 1px solid #666 !important;
               }
             }
           </style>
         </head>
         <body>
-          <div class="no-print" style="padding: 10px; background: #f0f0f0; border-bottom: 1px solid #ccc;">
-            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels - 70x30mm</h3>
-            <p style="margin: 0 0 10px 0; font-size: 14px;">Label Size: 70mm x 30mm | Total Labels: ${items.length}</p>
+          <div class="no-print" style="padding: 15px; background: #f0f0f0; border-bottom: 1px solid #ccc;">
+            <h3 style="margin: 0 0 10px 0;">TSC Thermal Printer Labels - 70x30mm (3 Labels Per Page)</h3>
+            <p style="margin: 0 0 10px 0; font-size: 14px;">
+              Label Size: 70mm x 30mm | Total Labels: ${items.length} | Pages: ${pages.length}
+            </p>
             <button onclick="window.print()" style="margin-right: 10px; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Print Labels</button>
-            <div style="margin-top: 10px; font-size: 12px; color: #666;">
-              <strong>TSC Printer Setup Instructions:</strong><br>
-              • Paper Size: 70mm x 30mm (Width x Height)<br>
-              • Orientation: Landscape<br>
-              • Print Direction: Check if it needs to be "Bottom to Top" instead of "Top to Bottom"<br>
-              • Print Speed: Medium (3-4 ips)<br>
-              • Print Density: 8-12<br>
-              • Gap Sensor: Enable and position correctly<br>
-              • Driver Settings: Custom size 70x30mm, Landscape orientation<br>
-              • Browser: Margins = 0, Scale = 100%, Background graphics = ON<br>
+            <div style="margin-top: 15px; font-size: 12px; color: #666; max-width: 800px;">
+              <strong>Print Setup Instructions:</strong><br>
+              • <strong>Page Size:</strong> A4 Portrait<br>
+              • <strong>Margins:</strong> 5mm all sides<br>
+              • <strong>Scale:</strong> 100% (no shrinking)<br>
+              • <strong>Background Graphics:</strong> ON (to print colors and borders)<br>
+              • <strong>Labels per page:</strong> 3 labels arranged vertically<br>
               <br>
-              <strong>If still printing rotated/inverted:</strong><br>
-              • Try changing "Print Direction" from "Top to Bottom" to "Bottom to Top" in TSC settings<br>
-              • Or try "Left to Right" / "Right to Left" options<br>
-              • Check "Mirror" or "Invert" options in printer driver
+              <strong>TSC Printer Tips:</strong><br>
+              • After printing on A4, cut each label along the borders<br>
+              • Each label is exactly 70mm x 30mm as required<br>
+              • Use this method if you want to batch print multiple labels efficiently<br>
+              • For direct thermal printing, you may need to adjust the label stock size in your TSC driver
             </div>
           </div>
-          <div>${cardsHTML}</div>
+          <div>${pagesHTML}</div>
           <script>
             // Generate QR codes - optimized size for thermal printing
             ${items.map(item => `
